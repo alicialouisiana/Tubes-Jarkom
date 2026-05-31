@@ -13,10 +13,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author grego
- */
 public class Left_panel extends javax.swing.JPanel {
 // Reference to the main panel or a central controller to send messages
 

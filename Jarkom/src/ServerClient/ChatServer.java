@@ -22,11 +22,11 @@ public class ChatServer {
     public static void main(String[] args) {
         System.out.println("Chat Server Started on port " + PORT);
 
-        // Create a default lobby room
-        // A single "lobby" room where users start
-        ChatRoom lobbyRoom = new ChatRoom("Lobby", "SERVER");
-        chatRooms.put("Lobby", lobbyRoom);
-        System.out.println("Default room 'Lobby' created.");
+        // Create a default general room
+        // A single "general" room where users start
+        ChatRoom generalRoom = new ChatRoom("General", "SERVER");
+        chatRooms.put("General", generalRoom);
+        System.out.println("Default room 'General' created.");
 
         try (ServerSocket listener = new ServerSocket(PORT)) {
             while (true) {
@@ -55,13 +55,13 @@ public class ChatServer {
         } else {
             // For general system messages (e.g., server startup/shutdown)
             // or messages not specific to a room (e.g., initial join announcements before room selection)
-            // This would usually be the "Lobby" or a global announcement channel.
-            // For now, let's assume global announcements also go through a room (e.g., "Lobby")
-            ChatRoom lobby = chatRooms.get("Lobby");
-            if (lobby != null) {
-                lobby.broadcastMessage(message);
+            // This would usually be the "General" or a global announcement channel.
+            // For now, let's assume global announcements also go through a room (e.g., "General")
+            ChatRoom general = chatRooms.get("General");
+            if (general != null) {
+                general.broadcastMessage(message);
             } else {
-                // Fallback if Lobby doesn't exist (shouldn't happen)
+                // Fallback if General doesn't exist (shouldn't happen)
                 connectedClients.values().forEach(handler -> {
                     try {
                         handler.getOutStream().writeObject(message);
@@ -93,7 +93,7 @@ public class ChatServer {
         private ObjectInputStream in;
         private ObjectOutputStream out;
         private String clientName;
-        private String currentRoomName = "Lobby"; // Every client starts in the lobby
+        private String currentRoomName = "General"; // Every client starts in the General
 
         public ClientHandler(Socket socket) {
             this.clientSocket = socket;
@@ -133,12 +133,11 @@ public class ChatServer {
 
                 System.out.println(clientName + " has connected.");
 
-                // Add client to Lobby
-                ChatRoom lobby = chatRooms.get("Lobby");
-                if (lobby != null) {
-                    lobby.addClient(clientName, out);
+                ChatRoom general = chatRooms.get("General");
+                if (general != null) {
+                    general.addClient(clientName, out);
                 } else {
-                    System.err.println("Lobby room not found! Cannot add client " + clientName);
+                    System.err.println("General room not found! Cannot add client " + clientName);
                     return;
                 }
 
@@ -231,14 +230,14 @@ public class ChatServer {
                                 String roomToLeave = incomingMessage.getRoomName();
                                 if (roomToLeave != null && roomToLeave.equals(currentRoomName)) {
                                     handleLeaveRoom(clientName, roomToLeave, out, "Left");
-                                    currentRoomName = "Lobby"; // After leaving, client is back in Lobby (conceptually, or disconnected from room)
-                                    ChatRoom lobbyRoomAfterLeave = chatRooms.get("Lobby");
-                                    if (lobbyRoomAfterLeave != null) {
-                                        lobbyRoomAfterLeave.addClient(clientName, out); // Add back to lobby for general announcements
+                                    currentRoomName = "General"; 
+                                    ChatRoom generalRoomAfterLeave = chatRooms.get("General");
+                                    if (generalRoomAfterLeave != null) {
+                                        generalRoomAfterLeave.addClient(clientName, out); // Add back to general for general announcements
                                     }
                                     System.out.println(clientName + " left room: " + roomToLeave);
                                     sendMessageToClient(clientName, new Message("SERVER", "SUCCESS", Message.MessageType.LEAVE_ROOM_RESPONSE, roomToLeave));
-                                    sendMessageToClient(clientName, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "Lobby")); // Re-join lobby
+                                    sendMessageToClient(clientName, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "General")); // Re-join general
                                 } else {
                                     sendMessageToClient(clientName, new Message("SERVER", "You are not in room '" + roomToLeave + "'", Message.MessageType.LEAVE_ROOM_RESPONSE));
                                 }
@@ -268,12 +267,12 @@ public class ChatServer {
                                         // Inform the kicked user directly
                                         sendMessageToClient(userToKick, new Message("SERVER", "You have been kicked from room '" + roomToKickFrom + "' by " + clientName + ".", Message.MessageType.USER_KICKED, roomToKickFrom)); // Using ROOM_CLOSED for simple message, or add new type
 
-                                        // Move kicked user to Lobby
-                                        targetHandler.currentRoomName = "Lobby";
-                                        ChatRoom lobbyAfterKick = chatRooms.get("Lobby");
-                                        if (lobbyAfterKick != null) {
-                                            lobbyAfterKick.addClient(userToKick, targetHandler.getOutStream());
-                                            sendMessageToClient(userToKick, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "Lobby"));
+                                        // Move kicked user to General
+                                        targetHandler.currentRoomName = "General";
+                                        ChatRoom generalAfterKick = chatRooms.get("General");
+                                        if (generalAfterKick != null) {
+                                            generalAfterKick.addClient(userToKick, targetHandler.getOutStream());
+                                            sendMessageToClient(userToKick, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "General"));
                                         }
                                     } else {
                                         sendMessageToClient(clientName, new Message("SERVER", "User '" + userToKick + "' not found or not in this room.", Message.MessageType.KICK_USER_RESPONSE));
@@ -290,17 +289,17 @@ public class ChatServer {
                                     // Notify all users in the closing room
                                     closingRoom.broadcastMessage(new Message("SERVER", "Room '" + roomToClose + "' is closing. You will be disconnected.", Message.MessageType.ROOM_CLOSED, roomToClose));
 
-                                    // Disconnect all users from this room and move to lobby
+                                    // Disconnect all users from this room and move to general
                                     Set<String> usersToMove = new HashSet<>(closingRoom.getActiveUsers());
                                     for (String user : usersToMove) {
                                         ClientHandler handlerToMove = connectedClients.get(user);
                                         if (handlerToMove != null) {
                                             handleLeaveRoom(user, roomToClose, handlerToMove.getOutStream(), "Left");
-                                            handlerToMove.currentRoomName = "Lobby"; // Move to Lobby
-                                            ChatRoom lobbyAfterClose = chatRooms.get("Lobby");
-                                            if (lobbyAfterClose != null) {
-                                                lobbyAfterClose.addClient(user, handlerToMove.getOutStream());
-                                                sendMessageToClient(user, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "Lobby"));
+                                            handlerToMove.currentRoomName = "General"; // Move to General
+                                            ChatRoom generalAfterClose = chatRooms.get("General");
+                                            if (generalAfterClose != null) {
+                                                generalAfterClose.addClient(user, handlerToMove.getOutStream());
+                                                sendMessageToClient(user, new Message("SERVER", "SUCCESS", Message.MessageType.JOIN_ROOM_RESPONSE, "General"));
                                             }
                                         }
                                     }

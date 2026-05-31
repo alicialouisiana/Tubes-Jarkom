@@ -4,10 +4,6 @@
  */
 package Form;
 
-/**
- *
- * @author grego
- */
 public class Chat_bottom extends javax.swing.JLayeredPane {
 
     /**

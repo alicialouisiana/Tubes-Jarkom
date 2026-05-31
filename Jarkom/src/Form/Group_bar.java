@@ -6,10 +6,6 @@ package Form;
 
 import ServerClient.Message;
 
-/**
- *
- * @author grego
- */
 public class Group_bar extends javax.swing.JPanel {
 
     private String clientName;
@@ -43,8 +39,10 @@ public class Group_bar extends javax.swing.JPanel {
         infoButton.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 12));
 
         label.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 14));
-        
-        
+
+        imageAvatar2.setImage(new javax.swing.ImageIcon(
+                getClass().getResource("/Icon/Kapibara.png")
+        ));
     }
 
     private void initControls() {

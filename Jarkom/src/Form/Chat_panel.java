@@ -60,7 +60,7 @@ public class Chat_panel extends javax.swing.JPanel {
         emojiBtn.addActionListener(e -> {
             String emoji = (String) JOptionPane.showInputDialog(
                     this,
-                    "Pilih Emoji",
+                    "Select Emoji",
                     "Emoji Picker",
                     JOptionPane.PLAIN_MESSAGE,
                     null,
@@ -74,8 +74,8 @@ public class Chat_panel extends javax.swing.JPanel {
         });
 // ambil komponen lama
         msgScroll.setPreferredSize(new Dimension(500, 100));
-        send.setPreferredSize(new Dimension(80, 40));
-        emojiBtn.setPreferredSize(new Dimension(50, 40));
+        send.setPreferredSize(new Dimension(50, 50));
+        emojiBtn.setPreferredSize(new Dimension(50, 50));
 
 // bikin panel baru
         JPanel inputPanel = new JPanel();
@@ -118,17 +118,6 @@ public class Chat_panel extends javax.swing.JPanel {
 
         name.setForeground(java.awt.Color.WHITE);
 
-        send.setBackground(new java.awt.Color(137, 180, 250));
-        send.setForeground(java.awt.Color.BLACK);
-
-        send.setBackground(new java.awt.Color(137, 180, 250));
-        send.setForeground(java.awt.Color.BLACK);
-
-        send.setBorderPainted(false);
-        send.setFocusPainted(false);
-        send.setContentAreaFilled(false);
-        send.setOpaque(true);
-
         send.setFont(new java.awt.Font("Segoe UI Emoji", java.awt.Font.BOLD, 14));
 
         send.setText("➤");
@@ -152,7 +141,7 @@ public class Chat_panel extends javax.swing.JPanel {
         });
         typingTimer.setRepeats(false);
 
-// Mengecek perubahan isi kolom pesan
+        // Mengecek perubahan isi kolom pesan
         message.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -201,6 +190,25 @@ public class Chat_panel extends javax.swing.JPanel {
         closeButton.setContentAreaFilled(false);
         closeButton.setOpaque(true);
         msgScroll.setBorder(null);
+
+        // ini untuk icon send 
+        java.awt.Image img = new javax.swing.ImageIcon(
+                getClass().getResource("/Icon/Send.png")
+        ).getImage();
+
+        java.awt.Image newImg = img.getScaledInstance(40, 40, java.awt.Image.SCALE_SMOOTH);
+
+        send.setIcon(new javax.swing.ImageIcon(newImg));
+
+        send.setText("");
+
+        send.setContentAreaFilled(false);
+        send.setBorderPainted(false);
+        send.setPreferredSize(new java.awt.Dimension(40, 40));
+        send.setOpaque(false);
+        send.setBorder(null);
+        send.setFocusPainted(false);
+        send.setBackground(new java.awt.Color(0, 0, 0, 0));
     }
 
     // Set the reference to the Left_panel
@@ -622,8 +630,8 @@ public class Chat_panel extends javax.swing.JPanel {
                             case ROOM_CLOSED:
                                 if (incomingMessage.getRoomName() != null && incomingMessage.getRoomName().equals(currentRoom)) {
                                     body.addItemLeft("System: This room has been closed by the owner.");
-                                    currentRoom = "Lobby";
-                                    name.setText(clientName + " (Lobby)");
+                                    currentRoom = "General";
+                                    name.setText(clientName + " (General)");
                                     name.setToolTipText("Current Room: None");
                                     body.removeAllItems();
                                     inputFieldEnablement(false);
@@ -749,8 +757,8 @@ public class Chat_panel extends javax.swing.JPanel {
                             case CLOSE_ROOM_RESPONSE:
                                 if (incomingMessage.getContent().startsWith("SUCCESS")) {
                                     body.addItemLeft("System: Room '" + incomingMessage.getRoomName() + "' has been closed.");
-//                                    currentRoom = "Lobby"; // Reset current room
-//                                    name.setText(clientName + " (Lobby)");
+//                                    currentRoom = "General"; // Reset current room
+//                                    name.setText(clientName + " (General)");
 //                                    name.setToolTipText("Current Room: None");
 //                                    body.removeAllItems(); // Clear chat history
 //                                    inputFieldEnablement(false); // Disable chat input

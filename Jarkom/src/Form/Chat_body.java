@@ -14,10 +14,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author grego
- */
 public class Chat_body extends javax.swing.JPanel {
 
     /**

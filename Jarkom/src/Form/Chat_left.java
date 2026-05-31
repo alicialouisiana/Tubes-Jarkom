@@ -7,10 +7,6 @@ package Form;
 import java.awt.Color;
 import java.time.LocalTime;
 
-/**
- *
- * @author grego
- */
 public class Chat_left extends javax.swing.JLayeredPane {
 
     /**

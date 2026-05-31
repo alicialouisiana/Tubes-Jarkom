@@ -4,10 +4,7 @@
  */
 package multiple_chat_room;
 
-/**
- *
- * @author grego
- */
+
 public class Multiple_Chat_Room {
 
     /**
