@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
 import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -21,6 +22,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.JFileChooser;
+import java.io.File;
 
 public class Chat_panel extends javax.swing.JPanel {
 
@@ -41,6 +44,7 @@ public class Chat_panel extends javax.swing.JPanel {
     public Chat_panel() {
         initComponents();
         JButton emojiBtn = new JButton("😀");
+        JButton imageBtn = new JButton("📷");
         emojiBtn.setFocusPainted(false);
         emojiBtn.setBorderPainted(false);
 
@@ -57,6 +61,7 @@ public class Chat_panel extends javax.swing.JPanel {
             }
         });
 
+        //ini untuk menunjukkan pilihan emoji 
         emojiBtn.addActionListener(e -> {
             String emoji = (String) JOptionPane.showInputDialog(
                     this,
@@ -66,12 +71,25 @@ public class Chat_panel extends javax.swing.JPanel {
                     null,
                     new String[]{"😀", "😂", "😍", "😭", "😎", "👍", "🔥", "🎉"},
                     "😀"
-            );
+            ); //emoji yang bisa dipilih 
 
             if (emoji != null) {
                 message.append(emoji);
             }
         });
+        
+        //ini button untuk mengirim foto
+        imageBtn.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            int result = chooser.showOpenDialog(Chat_panel.this);
+            
+            if(result == JFileChooser.APPROVE_OPTION){
+                File file = chooser.getSelectedFile();
+                System.out.println(file.getAbsolutePath());
+                sendImage(file);
+            }
+        });
+
 // ambil komponen lama
         msgScroll.setPreferredSize(new Dimension(500, 100));
         send.setPreferredSize(new Dimension(50, 50));
@@ -81,6 +99,7 @@ public class Chat_panel extends javax.swing.JPanel {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
         inputPanel.add(emojiBtn);
+        inputPanel.add(imageBtn);
         inputPanel.add(msgScroll);
         inputPanel.add(send);
 
@@ -390,6 +409,22 @@ public class Chat_panel extends javax.swing.JPanel {
         );
     }// </editor-fold>                        
 
+    private void sendImage(File file) {
+    try {
+        byte[] data = Files.readAllBytes(file.toPath());
+        Message msg = new Message(
+                clientName,
+                file.getName(),
+                Message.MessageType.IMAGE,
+                currentRoom
+        );
+        msg.setImageData(data);
+        sendMessage(msg);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private void userIsTyping() {
         // Kalau belum login atau belum masuk room, tidak perlu kirim typing
         if (clientName == null || currentRoom == null) {
@@ -585,6 +620,18 @@ public class Chat_panel extends javax.swing.JPanel {
                                     body.addItemLeft(incomingMessage.getSenderName() + ": " + incomingMessage.getContent());
                                 }
                                 break;
+                            case IMAGE:
+                                byte[] img = incomingMessage.getImageData();
+                                if (img != null) {
+                                    if (incomingMessage.getSenderName().equals(clientName)) {
+                                        body.addImageRight(img,incomingMessage.getTimestamp());                                            
+                                    } 
+                                    else {
+                                        body.addImageLeft(incomingMessage.getSenderName(),img,incomingMessage.getTimestamp());
+                                    }
+                                }
+                                break;
+
                             case TYPING:
                                 // Typing indicator hanya ditampilkan di user lain, bukan di diri sendiri
                                 if (incomingMessage.getRoomName() != null

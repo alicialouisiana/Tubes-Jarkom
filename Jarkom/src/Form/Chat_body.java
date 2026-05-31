@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.time.LocalDateTime;
+
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -84,6 +86,27 @@ public class Chat_body extends javax.swing.JPanel {
         body.repaint();   // Re-draw the panel
     }
 
+    public void addImageLeft(String sender, byte[] imageData, LocalDateTime timestamp) {
+        Chat_image_left item = new Chat_image_left(sender,imageData,timestamp);
+        body.add(
+                item,
+                "wrap, w ::60%"
+        );
+        body.repaint();
+        body.revalidate();
+        scrollToBottom(scroll);
+    }
+
+    public void addImageRight(byte[] imageData,LocalDateTime timestamp) {
+        Chat_image_right item = new Chat_image_right(imageData, timestamp);
+        body.add(
+                item,
+                "wrap, al right, w ::60%"
+        );
+        body.repaint();
+        body.revalidate();
+        scrollToBottom(scroll);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

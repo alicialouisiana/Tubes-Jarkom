@@ -165,6 +165,15 @@ public class ChatServer {
                                 }
                                 break;
 
+                            case IMAGE:
+                                if (incomingMessage.getRoomName() != null && incomingMessage.getRoomName().equals(currentRoomName)) {
+                                    ChatRoom currentChatRoom = chatRooms.get(currentRoomName);
+                                    if (currentChatRoom != null) {
+                                        currentChatRoom.broadcastMessage(incomingMessage);
+                                    }
+                                }
+                                break;
+                                
                             case TYPING:
                                 if (incomingMessage.getRoomName() != null
                                         && incomingMessage.getRoomName().equals(currentRoomName)) {

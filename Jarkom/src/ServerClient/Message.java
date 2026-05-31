@@ -15,11 +15,13 @@ public class Message implements Serializable {
     private String roomName; // For messages related to specific rooms
     private String targetUser; // For private messages, kick/ban commands, or room owner in info
     private List<String> dataList; // For lists of rooms, users in room, or room members in info
+    private byte[] imageData; //For sent data image
 
     // Enum for message types
     public enum MessageType {
         SYSTEM, // System messages (e.g., server info, name request)
         TEXT, // Regular chat messages
+        IMAGE, // Regular image messages
         CREATE_ROOM_REQUEST,
         CREATE_ROOM_RESPONSE,
         JOIN_ROOM_REQUEST,
@@ -103,6 +105,14 @@ public class Message implements Serializable {
         return dataList;
     } // Used for member list in ROOM_INFO_RESPONSE
 
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData (byte[] imageData) {
+        this.imageData = imageData;
+    }
+    
     // toString for debugging
     @Override
     public String toString() {
