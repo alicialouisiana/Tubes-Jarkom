@@ -166,6 +166,18 @@ public class ChatServer {
                                 }
                                 break;
 
+                            case TYPING:
+                                if (incomingMessage.getRoomName() != null
+                                        && incomingMessage.getRoomName().equals(currentRoomName)) {
+
+                                    ChatRoom currentChatRoom = chatRooms.get(currentRoomName);
+
+                                    if (currentChatRoom != null) {
+                                        currentChatRoom.broadcastMessage(incomingMessage);
+                                    }
+                                }
+                                break;
+
                             case CREATE_ROOM_REQUEST:
                                 String newRoomName = incomingMessage.getContent().trim();
                                 if (newRoomName.isEmpty()) {
@@ -294,7 +306,7 @@ public class ChatServer {
                                     }
 
                                     for (String user : usersToMove) {
-                                       sendMessageToClient(user, new Message("SERVER", "SUCCESS", Message.MessageType.CLOSE_ROOM_RESPONSE, roomToClose));
+                                        sendMessageToClient(user, new Message("SERVER", "SUCCESS", Message.MessageType.CLOSE_ROOM_RESPONSE, roomToClose));
                                     }
                                     chatRooms.remove(roomToClose); // Remove room from server's list
                                     System.out.println("Room '" + roomToClose + "' closed by owner " + clientName + ".");

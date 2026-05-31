@@ -18,6 +18,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Chat_panel extends javax.swing.JPanel {
 
@@ -29,6 +32,8 @@ public class Chat_panel extends javax.swing.JPanel {
     private ObjectOutputStream out;
     private String clientName;
     private String currentRoom = null; // Track the current room the client is in
+    private Timer typingTimer;
+    private boolean isTyping = false;
 
     // Reference to Left_panel to update room list
     private Left_panel leftPanelRef;
@@ -39,40 +44,53 @@ public class Chat_panel extends javax.swing.JPanel {
         emojiBtn.setFocusPainted(false);
         emojiBtn.setBorderPainted(false);
 
-emojiBtn.addActionListener(e -> {
-    String emoji = (String) JOptionPane.showInputDialog(
-        this,
-        "Pilih Emoji",
-        "Emoji Picker",
-        JOptionPane.PLAIN_MESSAGE,
-        null,
-        new String[]{"😀","😂","😍","😭","😎","👍","🔥","🎉"},
-        "😀"
-    );
+        // Supaya saat user menekan Enter, pesan langsung terkirim
+        message.getInputMap().put(
+                javax.swing.KeyStroke.getKeyStroke("ENTER"),
+                "sendMessage"
+        );
 
-    if (emoji != null) {
-        message.append(emoji);
-    }
-});
+        message.getActionMap().put("sendMessage", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                send.doClick();
+            }
+        });
+
+        emojiBtn.addActionListener(e -> {
+            String emoji = (String) JOptionPane.showInputDialog(
+                    this,
+                    "Pilih Emoji",
+                    "Emoji Picker",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    new String[]{"😀", "😂", "😍", "😭", "😎", "👍", "🔥", "🎉"},
+                    "😀"
+            );
+
+            if (emoji != null) {
+                message.append(emoji);
+            }
+        });
 // ambil komponen lama
-msgScroll.setPreferredSize(new Dimension(500, 100));
-send.setPreferredSize(new Dimension(80, 40));
-emojiBtn.setPreferredSize(new Dimension(50, 40));
+        msgScroll.setPreferredSize(new Dimension(500, 100));
+        send.setPreferredSize(new Dimension(80, 40));
+        emojiBtn.setPreferredSize(new Dimension(50, 40));
 
 // bikin panel baru
-JPanel inputPanel = new JPanel();
-inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
-inputPanel.add(emojiBtn);
-inputPanel.add(msgScroll);
-inputPanel.add(send);
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
+        inputPanel.add(emojiBtn);
+        inputPanel.add(msgScroll);
+        inputPanel.add(send);
 
 // ganti isi textLayer
-textLayer.removeAll();
-textLayer.setLayout(new java.awt.BorderLayout());
-textLayer.add(inputPanel, java.awt.BorderLayout.CENTER);
+        textLayer.removeAll();
+        textLayer.setLayout(new java.awt.BorderLayout());
+        textLayer.add(inputPanel, java.awt.BorderLayout.CENTER);
 
-textLayer.revalidate();
-textLayer.repaint();
+        textLayer.revalidate();
+        textLayer.repaint();
 
         setBackground(new java.awt.Color(24, 24, 37));
         setOpaque(true);
@@ -93,7 +111,7 @@ textLayer.repaint();
         message.setBackground(new java.awt.Color(69, 71, 90));
         message.setForeground(java.awt.Color.WHITE);
         message.setCaretColor(java.awt.Color.WHITE);
-        
+
         message.setBorder(null);
 
         message.setFont(new java.awt.Font("Segoe UI Emoji", java.awt.Font.PLAIN, 15));
@@ -126,6 +144,31 @@ textLayer.repaint();
 
         closeButton.setVisible(false);
         inputFieldEnablement(false);
+
+        // ini timer buat mematikan status typing setelah user berhenti mengetik
+        typingTimer = new Timer(2000, e -> {
+            sendTypingStatus(false);
+            isTyping = false;
+        });
+        typingTimer.setRepeats(false);
+
+// Mengecek perubahan isi kolom pesan
+        message.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                userIsTyping();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                userIsTyping();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                userIsTyping();
+            }
+        });
 
         send.setBorderPainted(false);
         send.setFocusPainted(false);
@@ -215,22 +258,22 @@ textLayer.repaint();
         javax.swing.GroupLayout textLayerLayout = new javax.swing.GroupLayout(textLayer);
         textLayer.setLayout(textLayerLayout);
         textLayerLayout.setHorizontalGroup(
-            textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(textLayerLayout.createSequentialGroup()
-                .addComponent(msgScroll)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(send)
-                .addContainerGap())
+                textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(textLayerLayout.createSequentialGroup()
+                                .addComponent(msgScroll)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(send)
+                                .addContainerGap())
         );
         textLayerLayout.setVerticalGroup(
-            textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(textLayerLayout.createSequentialGroup()
-                .addGroup(textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(textLayerLayout.createSequentialGroup()
-                        .addComponent(send)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(msgScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
-                .addContainerGap())
+                textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(textLayerLayout.createSequentialGroup()
+                                .addGroup(textLayerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(textLayerLayout.createSequentialGroup()
+                                                .addComponent(send)
+                                                .addGap(0, 0, Short.MAX_VALUE))
+                                        .addComponent(msgScroll, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE))
+                                .addContainerGap())
         );
 
         bottom.setLayer(textLayer, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -238,12 +281,12 @@ textLayer.repaint();
         javax.swing.GroupLayout bottomLayout = new javax.swing.GroupLayout(bottom);
         bottom.setLayout(bottomLayout);
         bottomLayout.setHorizontalGroup(
-            bottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(textLayer)
+                bottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(textLayer)
         );
         bottomLayout.setVerticalGroup(
-            bottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(textLayer)
+                bottomLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(textLayer)
         );
 
         name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -286,78 +329,128 @@ textLayer.repaint();
         javax.swing.GroupLayout group_listLayout = new javax.swing.GroupLayout(group_list);
         group_list.setLayout(group_listLayout);
         group_listLayout.setHorizontalGroup(
-            group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(group_listLayout.createSequentialGroup()
-                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
-                    .addComponent(bottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(group_listLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(status)
-                    .addComponent(name, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(closeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(leaveButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(info)
-                .addContainerGap())
+                group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(group_listLayout.createSequentialGroup()
+                                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, 700, Short.MAX_VALUE)
+                                        .addComponent(bottom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                        .addGroup(group_listLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(status)
+                                        .addComponent(name, javax.swing.GroupLayout.PREFERRED_SIZE, 178, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(closeButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(leaveButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(info)
+                                .addContainerGap())
         );
         group_listLayout.setVerticalGroup(
-            group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(group_listLayout.createSequentialGroup()
-                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(group_listLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(status)
-                        .addGap(8, 8, 8))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, group_listLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(info)
-                            .addComponent(leaveButton)
-                            .addComponent(closeButton))
-                        .addGap(18, 18, 18)))
-                .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(bottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(group_listLayout.createSequentialGroup()
+                                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(group_listLayout.createSequentialGroup()
+                                                .addContainerGap()
+                                                .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(status)
+                                                .addGap(8, 8, 8))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, group_listLayout.createSequentialGroup()
+                                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addGroup(group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(info)
+                                                        .addComponent(leaveButton)
+                                                        .addComponent(closeButton))
+                                                .addGap(18, 18, 18)))
+                                .addComponent(body, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(bottom, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(group_list)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(group_list)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(group_list)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(group_list)
         );
     }// </editor-fold>                        
 
-    private void sendActionPerformed(java.awt.event.ActionEvent evt) {                                     
-        String msg = message.getText();
-        if (!msg.trim().isEmpty() && clientName != null && currentRoom != null) {
-            body.addItemRight(msg); // Display our own message
+    private void userIsTyping() {
+        // Kalau belum login atau belum masuk room, tidak perlu kirim typing
+        if (clientName == null || currentRoom == null) {
+            return;
+        }
+
+        // Kalau kolom pesan kosong, berarti user tidak sedang mengetik
+        if (message.getText().trim().isEmpty()) {
+            sendTypingStatus(false);
+            isTyping = false;
+            return;
+        }
+
+        // Kirim typing true sekali saja, supaya tidak spam setiap huruf
+        if (!isTyping) {
+            sendTypingStatus(true);
+            isTyping = true;
+        }
+
+        // Timer diulang setiap user mengetik
+        typingTimer.restart();
+    }
+
+    private void sendTypingStatus(boolean typing) {
+        if (clientName == null || currentRoom == null) {
+            return;
+        }
+
+        Message typingMessage = new Message(
+                clientName,
+                typing ? "true" : "false",
+                Message.MessageType.TYPING,
+                currentRoom
+        );
+
+        sendMessage(typingMessage);
+    }
+
+    private void sendActionPerformed(java.awt.event.ActionEvent evt) {
+        String msg = message.getText().trim();
+
+        if (!msg.isEmpty() && clientName != null && currentRoom != null) {
+            // tampilin pesan sendiri di kanan
+            body.addItemRight(msg);
+
+            // kirim pesan ke server
             sendMessage(new Message(clientName, msg, Message.MessageType.TEXT, currentRoom));
-            message.setText(""); // Clear the input field
+
+            // kosongkan kolom pesan
+            message.setText("");
+
+            // kalau pesan terkirim, status typing dimatikan
+            sendTypingStatus(false);
+            isTyping = false;
+            status.setText("Active now");
+
         } else if (currentRoom == null) {
             body.addItemLeft("System: Please join a room to send messages.");
         } else if (clientName == null) {
             body.addItemLeft("System: Not logged in. Please restart and enter your name.");
         }
-    }                                    
+    }
 
-    private void infoActionPerformed(java.awt.event.ActionEvent evt) {                                     
+    private void infoActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         requestRoomInfo();
-    }                                    
+    }
 
-    private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {                                            
+    private void leaveButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         if (clientName != null && currentRoom != null) {
             int confirm = JOptionPane.showConfirmDialog(
@@ -374,9 +467,9 @@ textLayer.repaint();
         } else {
             JOptionPane.showMessageDialog(this, "You are not in a room.", "Leave Room", JOptionPane.WARNING_MESSAGE);
         }
-    }                                           
+    }
 
-    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {                                            
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         if (clientName != null && currentRoom != null) {
             int confirm = JOptionPane.showConfirmDialog(this,
@@ -390,7 +483,7 @@ textLayer.repaint();
         } else {
             body.addItemLeft("System: You are not in a room.");
         }
-    }                                           
+    }
 
     public void sendMessage(Message msg) {
         if (out != null) {
@@ -482,6 +575,19 @@ textLayer.repaint();
                                     }
                                 } else if (incomingMessage.getRoomName() == null) { // General chat or server broadcast (should be rare in multi-room)
                                     body.addItemLeft(incomingMessage.getSenderName() + ": " + incomingMessage.getContent());
+                                }
+                                break;
+                            case TYPING:
+                                // Typing indicator hanya ditampilkan di user lain, bukan di diri sendiri
+                                if (incomingMessage.getRoomName() != null
+                                        && incomingMessage.getRoomName().equals(currentRoom)
+                                        && !incomingMessage.getSenderName().equals(clientName)) {
+
+                                    if (incomingMessage.getContent().equals("true")) {
+                                        status.setText(incomingMessage.getSenderName() + " is typing...");
+                                    } else {
+                                        status.setText("Active now");
+                                    }
                                 }
                                 break;
                             case USER_JOINED_ROOM:
@@ -699,8 +805,7 @@ textLayer.repaint();
             }
         }).start();
     }
-    
-    
+
     private void inputFieldEnablement(boolean enable) {
         message.setEnabled(enable);
         send.setEnabled(enable);
@@ -739,7 +844,6 @@ textLayer.repaint();
                 Message.MessageType.ROOM_INFO_REQUEST, currentRoom));
         System.out.println(clientName + " requesting info for room: " + currentRoom);
     }
-
 
     // Variables declaration - do not modify                     
     private Form.Chat_body body;

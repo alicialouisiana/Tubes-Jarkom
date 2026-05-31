@@ -41,7 +41,8 @@ public class Message implements Serializable {
 
         // --- NEW MESSAGE TYPES FOR ROOM INFO ---
         ROOM_INFO_REQUEST, // Client requests details about a room
-        ROOM_INFO_RESPONSE   // Server sends details about a room (owner, members)
+        ROOM_INFO_RESPONSE,   // Server sends details about a room (owner, members)
+        TYPING
         // --- END NEW MESSAGE TYPES ---
     }
 
