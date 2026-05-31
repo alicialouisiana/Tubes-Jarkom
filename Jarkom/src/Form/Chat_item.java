@@ -13,10 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.border.EmptyBorder;
 
-/**
- *
- * @author grego
- */
 public class Chat_item extends javax.swing.JPanel {
 
     /**
@@ -27,6 +23,10 @@ public class Chat_item extends javax.swing.JPanel {
         txt.setEditable(false);
         txt.setBackground(new Color(0, 0, 0, 0));
         txt.setOpaque(false);
+        txt.setFont(new java.awt.Font(
+            "Segoe UI Emoji",
+            java.awt.Font.PLAIN,
+            14));
     }
 
     public void setText(String text) {
