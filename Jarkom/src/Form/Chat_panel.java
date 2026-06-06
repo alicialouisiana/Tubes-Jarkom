@@ -468,7 +468,7 @@ public class Chat_panel extends javax.swing.JPanel {
 
         if (!msg.isEmpty() && clientName != null && currentRoom != null) {
             // tampilin pesan sendiri di kanan
-            body.addItemRight(clientName, msg);
+            body.addItemRight(msg);
 
             // kirim pesan ke server
             sendMessage(new Message(clientName, msg, Message.MessageType.TEXT, currentRoom));
