@@ -65,11 +65,11 @@ public class Left_panel extends javax.swing.JPanel {
         createRoomButton.addActionListener(e -> createNewRoom());
         // Add the button to the Left_panel's layout. Adjust position as needed.
         // Using MigLayout, you can place it at the top.
-        this.setLayout(new MigLayout("fillx, filly", "[]", "[pref!][fill]")); // Adjust Left_panel's own layout
-        this.add(createRoomButton, "wrap, alignx center, gapy 5 5"); // Place button at top center, then wrap
-        this.add(scroll, "grow, wrap"); // Add the scroll pane to fill remaining space
+       this.setLayout(new MigLayout("fill, insets 5","[grow]","[grow][]"));
 
-    }
+        this.add(scroll, "grow, push, wrap");
+
+    this.add(createRoomButton,"alignx center, gapbottom 20, w 160!, h 35!");}
 
     private void createNewRoom() {
         String roomName = JOptionPane.showInputDialog(this, "Enter new room name:", "Create Room", JOptionPane.PLAIN_MESSAGE);
@@ -149,7 +149,7 @@ public class Left_panel extends javax.swing.JPanel {
         );
         group_listLayout.setVerticalGroup(
             group_listLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 720, Short.MAX_VALUE)
+            .addGap(0, 500, Short.MAX_VALUE)
         );
 
         scroll.setViewportView(group_list);
