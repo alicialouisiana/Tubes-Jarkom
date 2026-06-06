@@ -51,7 +51,19 @@ public class Chat_body extends javax.swing.JPanel {
 
     public void addItemLeft(String text) {
         Chat_left item = new Chat_left();
-        item.setText(text);
+
+        // kalau string chat mengandung tanda titik dua ": "
+        if (text.contains(": ")) {
+            String[] parts = text.split(": ", 2);
+            String sender = parts[0].toUpperCase();
+            String message = parts[1];
+
+            // pisahin dengan baris baru (\n)
+            item.setText(sender + "\n" + message);
+        } else {
+            item.setText(text);
+        }
+
         body.add(item, "wrap, w ::60%");
         body.repaint();
         body.revalidate();
@@ -60,7 +72,9 @@ public class Chat_body extends javax.swing.JPanel {
 
     public void addItemRight(String text) {
         Chat_right item = new Chat_right();
+        
         item.setText(text);
+
         body.add(item, "wrap, al right, w ::60%");
         body.repaint();
         body.revalidate();

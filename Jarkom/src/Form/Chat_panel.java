@@ -71,7 +71,7 @@ public class Chat_panel extends javax.swing.JPanel {
                     null,
                     new String[]{"😀", "😂", "😍", "😭", "😎", "👍", "🔥", "🎉"},
                     "😀"
-            ); //emoji yang bisa dipilih 
+            ); //emoji yang bisa dipilih
 
             if (emoji != null) {
                 message.append(emoji);
@@ -468,7 +468,7 @@ public class Chat_panel extends javax.swing.JPanel {
 
         if (!msg.isEmpty() && clientName != null && currentRoom != null) {
             // tampilin pesan sendiri di kanan
-            body.addItemRight(msg);
+            body.addItemRight(clientName, msg);
 
             // kirim pesan ke server
             sendMessage(new Message(clientName, msg, Message.MessageType.TEXT, currentRoom));
