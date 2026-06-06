@@ -32,7 +32,10 @@ public class Left_panel extends javax.swing.JPanel {
         scroll.setBorder(null);
         group_list.setOpaque(true);
         // Set the layout for the group_list JLayeredPane
-        group_list.setLayout(new MigLayout("fillx, filly, insets 10", "[grow]", "[pref!][fill]"));
+        group_list.setLayout(new MigLayout(
+                "fillx, insets 5",
+                "[grow]"
+        ));;
         initControls(); // Initialize buttons and other controls
     }
 
@@ -103,12 +106,12 @@ public class Left_panel extends javax.swing.JPanel {
 
                     @Override
                     public void mouseExited(MouseEvent e) {
-                        roomBar.setBackground(new java.awt.Color(24,24,37)); // Reset background
+                        roomBar.setBackground(new java.awt.Color(24, 24, 37)); // Reset background
                     }
                 });
                 // --- END MOUSE LISTENER ---
 
-                group_list.add(roomBar, "wrap, growx, gapy 5"); // Add to the layout, grow horizontally
+                group_list.add(roomBar, "wrap, growx, gapy 1"); // Add to the layout, grow horizontally
             }
             group_list.revalidate(); // Re-calculate layout
             group_list.repaint();   // Re-draw components
