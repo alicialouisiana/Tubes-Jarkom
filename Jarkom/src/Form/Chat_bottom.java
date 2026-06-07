@@ -6,9 +6,6 @@ package Form;
 
 public class Chat_bottom extends javax.swing.JLayeredPane {
 
-    /**
-     * Creates new form Chat_bottom
-     */
     public Chat_bottom() {
         initComponents();
         setBackground(new java.awt.Color(69,71,90));

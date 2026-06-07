@@ -5,19 +5,18 @@ import java.io.ObjectOutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap; // For thread-safe map
 
 public class ChatRoom {
     private final String roomName;
-    private final String ownerName; // Name of the user who created this room
-    private final Set<ObjectOutputStream> clientStreams; // Streams of clients in THIS room
-    private final Set<String> activeUsers; // Names of active users in THIS room
+    private final String ownerName; 
+    private final Set<ObjectOutputStream> clientStreams; 
+    private final Set<String> activeUsers; 
 
     public ChatRoom(String roomName, String ownerName) {
         this.roomName = roomName;
         this.ownerName = ownerName;
-        this.clientStreams = Collections.synchronizedSet(new HashSet<>()); // Thread-safe set
-        this.activeUsers = Collections.synchronizedSet(new HashSet<>()); // Thread-safe set
+        this.clientStreams = Collections.synchronizedSet(new HashSet<>()); 
+        this.activeUsers = Collections.synchronizedSet(new HashSet<>()); 
     }
 
     public String getRoomName() {
@@ -39,7 +38,7 @@ public class ChatRoom {
         synchronized (activeUsers) {
             activeUsers.add(userName);
         }
-        broadcastMessage(new Message("SERVER", userName + " has joined the room.", Message.MessageType.USER_JOINED_ROOM, roomName));
+        broadcastMessage(new Message("SERVER", userName + " has joined the room. Say hi!", Message.MessageType.USER_JOINED_ROOM, roomName));
     }
 
     public void removeClient(String userName, ObjectOutputStream outStream, String type) {
@@ -60,7 +59,6 @@ public class ChatRoom {
         }
     }
 
-    // Broadcast message only to clients in this specific room
     public void broadcastMessage(Message message) {
         synchronized (clientStreams) {
             clientStreams.forEach(outStream -> {
@@ -69,19 +67,15 @@ public class ChatRoom {
                     outStream.flush();
                 } catch (IOException e) {
                     System.err.println("Error broadcasting to client in room " + roomName + ": " + e.getMessage());
-                    // Client might have disconnected; it will be cleaned up by ClientHandler's finally block
                 }
             });
         }
     }
 
-    // Kick a user from this room (only owner can call this)
     public boolean kickUser(String userToKick) {
         if (!activeUsers.contains(userToKick)) {
             return false; // User not in this room
         }
-        // Signal the server to disconnect the user from this room
-        // The actual disconnection and removal from the ClientHandler's map will happen in ChatServer
         return true; 
     }
     

@@ -24,21 +24,21 @@ public class Room_info extends JFrame {
 
     private String roomName;
     private String ownerName;
-    private String clientName; // The name of the client who opened this window
+    private String clientName; 
     private List<String> members;
-    private Chat_panel chatPanelRef; // Reference to Chat_panel to send kick messages
+    private Chat_window chatWindowRef; 
 
     private JLabel roomNameLabel;
     private JLabel ownerLabel;
     private DefaultListModel<String> membersListModel;
     private JList<String> membersJList;
 
-    public Room_info(String roomName, String ownerName, String clientName, List<String> members, Chat_panel chatPanelRef) {
+    public Room_info(String roomName, String ownerName, String clientName, List<String> members, Chat_window chatWindowRef) {
         this.roomName = roomName;
         this.ownerName = ownerName;
         this.clientName = clientName;
         this.members = members;
-        this.chatPanelRef = chatPanelRef;
+        this.chatWindowRef = chatWindowRef;
 
         setTitle("Room Info: " + roomName);
         setSize(400, 500);
@@ -60,7 +60,7 @@ public class Room_info extends JFrame {
         roomNameLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         topPanel.add(roomNameLabel);
 
-        ownerLabel = new JLabel("Owner: " + ownerName);
+        ownerLabel = new JLabel("Admin: " + ownerName);
         ownerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         topPanel.add(ownerLabel);
 
@@ -123,9 +123,9 @@ public class Room_info extends JFrame {
 
         int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to kick '" + selectedMember + "' from " + roomName + "?", "Confirm Kick", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            if (chatPanelRef != null) {
+            if (chatWindowRef != null) {
                 // Send KICK_USER_REQUEST to the server
-                chatPanelRef.sendMessage(new Message(clientName, "Kick request for " + selectedMember,
+                chatWindowRef.sendMessage(new Message(clientName, "Kick request for " + selectedMember,
                         Message.MessageType.KICK_USER_REQUEST, roomName, selectedMember));
                 JOptionPane.showMessageDialog(this, "Kick request sent for " + selectedMember + ". The window will now close.", "Request Sent", JOptionPane.INFORMATION_MESSAGE);
                 dispose(); // Close the window after sending kick request

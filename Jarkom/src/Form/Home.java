@@ -6,14 +6,10 @@ package Form;
 
 import net.miginfocom.swing.MigLayout;
 
-/**
- *
- * @author grego
- */
 public class Home extends javax.swing.JLayeredPane {
 
-    private Left_panel leftPanel;
-    private Chat_panel chatPanel;
+    private Sender_panel senderPanel;
+    private Chat_window chatWindow;
 
     public Home() {
         initComponents();
@@ -26,18 +22,18 @@ public class Home extends javax.swing.JLayeredPane {
         setBackground(new java.awt.Color(30,30,46));
         setOpaque(true);
         
-        leftPanel = new Left_panel();
-        chatPanel = new Chat_panel();
+        senderPanel = new Sender_panel();
+        chatWindow = new Chat_window();
         
         // Establish references between panels
-        leftPanel.setChatPanelReference(chatPanel);
-        chatPanel.setLeftPanelReference(leftPanel);
+        senderPanel.setChatWindowReference(chatWindow);
+        chatWindow.setSenderPanelReference(senderPanel);
 
-        this.add(leftPanel);
-        this.add(chatPanel);
+        this.add(senderPanel);
+        this.add(chatWindow);
         
         // Start the client connection after both panels are initialized and linked
-        chatPanel.startClientConnection();
+        chatWindow.startClientConnection();
     }
 
     @SuppressWarnings("unchecked")

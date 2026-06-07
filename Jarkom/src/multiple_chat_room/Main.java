@@ -11,11 +11,9 @@ public class Main extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Main.class.getName());
 
-    /**
-     * Creates new form Main
-     */
+    
     public Main() {
-        super("Multiple Chat Room"); // Set the frame title
+        super("Multiple Chat Room"); 
         initComponents();
         setLayout(new MigLayout("fillx, filly", "0[200!]5[fill, 100%]5[200!]0", "0[fill]0"));
     }

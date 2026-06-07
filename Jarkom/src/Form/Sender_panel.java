@@ -13,12 +13,11 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
-public class Left_panel extends javax.swing.JPanel {
+public class Sender_panel extends javax.swing.JPanel {
 // Reference to the main panel or a central controller to send messages
 
-    private Chat_panel chatPanelRef; // Reference to the Chat_panel to send messages
-
-    public Left_panel() {
+    private Chat_window chatWindowRef; 
+    public Sender_panel() {
         initComponents();
 
         setBackground(new java.awt.Color(24, 24, 37));
@@ -39,13 +38,12 @@ public class Left_panel extends javax.swing.JPanel {
         initControls(); // Initialize buttons and other controls
     }
 
-    // This method is called from Home.java to give Left_panel a reference to Chat_panel
-    public void setChatPanelReference(Chat_panel chatPanelRef) {
-        this.chatPanelRef = chatPanelRef;
+    public void setChatWindowReference(Chat_window chatWindowRef) {
+        this.chatWindowRef = chatWindowRef;
         // After setting reference, request initial room list
         // This ensures the room list is populated as soon as the client is ready
-        if (chatPanelRef != null && chatPanelRef.getClientName() != null) {
-            chatPanelRef.sendMessage(new Message(chatPanelRef.getClientName(), "Requesting room list", Message.MessageType.LIST_ROOMS_REQUEST));
+        if (chatWindowRef != null && chatWindowRef.getClientName() != null) {
+            chatWindowRef.sendMessage(new Message(chatWindowRef.getClientName(), "Requesting room list", Message.MessageType.LIST_ROOMS_REQUEST));
         }
     }
 
@@ -63,7 +61,6 @@ public class Left_panel extends javax.swing.JPanel {
 
         createRoomButton.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 13));
         createRoomButton.addActionListener(e -> createNewRoom());
-        // Add the button to the Left_panel's layout. Adjust position as needed.
         // Using MigLayout, you can place it at the top.
        this.setLayout(new MigLayout("fill, insets 5","[grow]","[grow][]"));
 
@@ -74,9 +71,9 @@ public class Left_panel extends javax.swing.JPanel {
     private void createNewRoom() {
         String roomName = JOptionPane.showInputDialog(this, "Enter new room name:", "Create Room", JOptionPane.PLAIN_MESSAGE);
         if (roomName != null && !roomName.trim().isEmpty()) {
-            if (chatPanelRef != null && chatPanelRef.getClientName() != null) {
+            if (chatWindowRef != null && chatWindowRef.getClientName() != null) {
                 // Send a CREATE_ROOM_REQUEST message to the server
-                chatPanelRef.sendMessage(new Message(chatPanelRef.getClientName(), roomName.trim(), Message.MessageType.CREATE_ROOM_REQUEST, roomName.trim()));
+                chatWindowRef.sendMessage(new Message(chatWindowRef.getClientName(), roomName.trim(), Message.MessageType.CREATE_ROOM_REQUEST, roomName.trim()));
             } else {
                 JOptionPane.showMessageDialog(this, "Please ensure you are connected and have a name set.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -88,7 +85,7 @@ public class Left_panel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(() -> {
             group_list.removeAll(); // Clear existing room bars
             for (String roomName : rooms) {
-                Group_bar roomBar = new Group_bar(roomName.length() > 12 ? roomName.substring(0, 12) + "..." : roomName, chatPanelRef.getClientName(), roomName, chatPanelRef);
+                Group_bar roomBar = new Group_bar(roomName.length() > 12 ? roomName.substring(0, 12) + "..." : roomName, chatWindowRef.getClientName(), roomName, chatWindowRef);
 
                 // --- ADD MOUSE LISTENER TO EACH GROUP_BAR ---
                 roomBar.addMouseListener(new MouseAdapter() {
@@ -119,9 +116,9 @@ public class Left_panel extends javax.swing.JPanel {
     }
 
     private void joinRoom(String roomName) {
-        if (chatPanelRef != null && chatPanelRef.getClientName() != null) {
+        if (chatWindowRef != null && chatWindowRef.getClientName() != null) {
             // Send a JOIN_ROOM_REQUEST message to the server
-            chatPanelRef.sendMessage(new Message(chatPanelRef.getClientName(), "Joining room", Message.MessageType.JOIN_ROOM_REQUEST, roomName));
+            chatWindowRef.sendMessage(new Message(chatWindowRef.getClientName(), "Joining room", Message.MessageType.JOIN_ROOM_REQUEST, roomName));
         } else {
             JOptionPane.showMessageDialog(this, "Please ensure you are connected and have a name set.", "Error", JOptionPane.ERROR_MESSAGE);
         }

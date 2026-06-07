@@ -50,7 +50,7 @@ public class Chat_body extends javax.swing.JPanel {
     }
 
     public void addItemLeft(String text) {
-        Chat_left item = new Chat_left();
+        Chat_sender item = new Chat_sender();
 
         // kalau string chat mengandung tanda titik dua ": "
         if (text.contains(": ")) {
@@ -71,7 +71,7 @@ public class Chat_body extends javax.swing.JPanel {
     }
 
     public void addItemRight(String text) {
-        Chat_right item = new Chat_right();
+        Chat_receiver item = new Chat_receiver();
         
         item.setText(text);
 

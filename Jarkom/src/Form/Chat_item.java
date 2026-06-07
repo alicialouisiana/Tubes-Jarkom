@@ -15,9 +15,6 @@ import javax.swing.border.EmptyBorder;
 
 public class Chat_item extends javax.swing.JPanel {
 
-    /**
-     * Creates new form Chat_item
-     */
     public Chat_item() {
         initComponents();
         txt.setEditable(false);

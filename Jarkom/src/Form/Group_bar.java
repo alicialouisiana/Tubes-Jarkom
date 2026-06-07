@@ -10,17 +10,14 @@ public class Group_bar extends javax.swing.JPanel {
 
     private String clientName;
     private String thisRoom;
-    private Chat_panel chatPanelRef;
+    private Chat_window chatWindowRef;
 
-    /**
-     * Creates new form Chat_room
-     */
-    public Group_bar(String name, String clientName, String thisRoom, Chat_panel chatPanelRef) {
+    public Group_bar(String name, String clientName, String thisRoom, Chat_window chatWindowRef) {
         initComponents();
         label.setText(name);
         this.clientName = clientName;
         this.thisRoom = thisRoom;
-        this.chatPanelRef = chatPanelRef;
+        this.chatWindowRef = chatWindowRef;
         initControls();
 
         setBackground(new java.awt.Color(24, 24, 37));
@@ -50,10 +47,10 @@ public class Group_bar extends javax.swing.JPanel {
     }
 
     private void showRoomInfo() {
-        chatPanelRef.sendMessage(new Message(clientName, "Requesting info for " + thisRoom + " from Group List",
+        chatWindowRef.sendMessage(new Message(clientName, "Requesting info for " + thisRoom + " from Group List",
                 Message.MessageType.ROOM_INFO_REQUEST, thisRoom));
         System.out.println(clientName + " requesting info for room: " + thisRoom);
-        //chatPanelRef.sendMessage(new Message(clientName, "Requesting users from group bar", Message.MessageType.USERS_IN_ROOM_REQUEST, thisRoom));
+        //chatWindowRef.sendMessage(new Message(clientName, "Requesting users from group bar", Message.MessageType.USERS_IN_ROOM_REQUEST, thisRoom));
     }
 
     /**
@@ -78,7 +75,6 @@ public class Group_bar extends javax.swing.JPanel {
         label.setText("Name");
 
         imageAvatar2.setBorderSize(0);
-        imageAvatar2.setImage(new javax.swing.ImageIcon(getClass().getResource("/Icon/group icon.png"))); // NOI18N
 
         infoButton.setText("Info");
 

@@ -4,10 +4,6 @@
  */
 package multiple_chat_room;
 
-/**
- *
- * @author grego
- */
 import javax.swing.JTextPane;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BoxView;

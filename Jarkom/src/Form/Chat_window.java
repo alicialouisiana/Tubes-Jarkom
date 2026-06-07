@@ -25,23 +25,21 @@ import javax.swing.event.DocumentListener;
 import javax.swing.JFileChooser;
 import java.io.File;
 
-public class Chat_panel extends javax.swing.JPanel {
+public class Chat_window extends javax.swing.JPanel {
 
     private static final String SERVER_ADDRESS = "127.0.0.1";
-    private static final int SERVER_PORT = 12345;
+    private static final int SERVER_PORT = 23181;
 
     private Socket socket;
     private ObjectInputStream in;
     private ObjectOutputStream out;
     private String clientName;
-    private String currentRoom = null; // Track the current room the client is in
+    private String currentRoom = null;
     private Timer typingTimer;
     private boolean isTyping = false;
+    private Sender_panel senderPanelRef;
 
-    // Reference to Left_panel to update room list
-    private Left_panel leftPanelRef;
-
-    public Chat_panel() {
+    public Chat_window() {
         initComponents();
         JButton emojiBtn = new JButton("😀");
         JButton imageBtn = new JButton("📷");
@@ -77,25 +75,25 @@ public class Chat_panel extends javax.swing.JPanel {
                 message.append(emoji);
             }
         });
-        
+
         //ini button untuk mengirim foto
         imageBtn.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
-            int result = chooser.showOpenDialog(Chat_panel.this);
-            
-            if(result == JFileChooser.APPROVE_OPTION){
+            int result = chooser.showOpenDialog(Chat_window.this);
+
+            if (result == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
                 System.out.println(file.getAbsolutePath());
                 sendImage(file);
             }
         });
 
-// ambil komponen lama
+        // ambil komponen lama
         msgScroll.setPreferredSize(new Dimension(500, 100));
         send.setPreferredSize(new Dimension(50, 50));
         emojiBtn.setPreferredSize(new Dimension(50, 50));
 
-// bikin panel baru
+        // bikin panel baru
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.X_AXIS));
         inputPanel.add(emojiBtn);
@@ -103,7 +101,7 @@ public class Chat_panel extends javax.swing.JPanel {
         inputPanel.add(msgScroll);
         inputPanel.add(send);
 
-// ganti isi textLayer
+        // ganti isi textLayer
         textLayer.removeAll();
         textLayer.setLayout(new java.awt.BorderLayout());
         textLayer.add(inputPanel, java.awt.BorderLayout.CENTER);
@@ -230,16 +228,14 @@ public class Chat_panel extends javax.swing.JPanel {
         send.setBackground(new java.awt.Color(0, 0, 0, 0));
     }
 
-    // Set the reference to the Left_panel
-    public void setLeftPanelReference(Left_panel leftPanelRef) {
-        this.leftPanelRef = leftPanelRef;
+    public void setSenderPanelReference(Sender_panel senderPanelRef) {
+        this.senderPanelRef = senderPanelRef;
     }
 
     public String getClientName() {
         return clientName;
     }
 
-    // Call this from your Main frame to initiate connection
     public void startClientConnection() {
         connectToServer();
     }
@@ -320,7 +316,7 @@ public class Chat_panel extends javax.swing.JPanel {
         name.setText("NAMA");
 
         status.setForeground(new java.awt.Color(51, 255, 0));
-        status.setText("Active now");
+        status.setText("Online");
 
         info.setText("Info");
         info.addActionListener(new java.awt.event.ActionListener() {
@@ -410,16 +406,16 @@ public class Chat_panel extends javax.swing.JPanel {
     }// </editor-fold>                        
 
     private void sendImage(File file) {
-    try {
-        byte[] data = Files.readAllBytes(file.toPath());
-        Message msg = new Message(
-                clientName,
-                file.getName(),
-                Message.MessageType.IMAGE,
-                currentRoom
-        );
-        msg.setImageData(data);
-        sendMessage(msg);
+        try {
+            byte[] data = Files.readAllBytes(file.toPath());
+            Message msg = new Message(
+                    clientName,
+                    file.getName(),
+                    Message.MessageType.IMAGE,
+                    currentRoom
+            );
+            msg.setImageData(data);
+            sendMessage(msg);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -479,7 +475,7 @@ public class Chat_panel extends javax.swing.JPanel {
             // kalau pesan terkirim, status typing dimatikan
             sendTypingStatus(false);
             isTyping = false;
-            status.setText("Active now");
+            status.setText("Online");
 
         } else if (currentRoom == null) {
             body.addItemLeft("System: Please join a room to send messages.");
@@ -535,8 +531,8 @@ public class Chat_panel extends javax.swing.JPanel {
                 out.flush();
                 System.out.println("Client sent: Type=" + msg.getType() + ", Content=" + msg.getContent() + (msg.getRoomName() != null ? " to room " + msg.getRoomName() : ""));
             } catch (IOException e) {
-                SwingUtilities.invokeLater(() -> body.addItemLeft("System: Error sending message: " + e.getMessage()));
-                System.err.println("Error sending message: " + e.getMessage());
+                SwingUtilities.invokeLater(() -> body.addItemLeft("System: Error : " + e.getMessage()));
+                System.err.println("Error: " + e.getMessage());
             }
         } else {
             SwingUtilities.invokeLater(() -> body.addItemLeft("System: Not connected to the server. Please check connection."));
@@ -563,7 +559,7 @@ public class Chat_panel extends javax.swing.JPanel {
                 in = new ObjectInputStream(socket.getInputStream());
                 System.out.println("Client: ObjectInputStream created. Ready to receive messages.");
 
-                SwingUtilities.invokeLater(() -> body.addItemLeft("System: Connected to server. Waiting for instructions."));
+                SwingUtilities.invokeLater(() -> body.addItemLeft("System: Connected to server. Select or create room"));
 
                 while (true) {
                     Object receivedObject = in.readObject();
@@ -582,16 +578,16 @@ public class Chat_panel extends javax.swing.JPanel {
                                 if (incomingMessage.getContent().equals("SUBMITNAME")) {
                                     System.out.println("Client: Server requested name. Displaying JOptionPane.");
                                     clientName = JOptionPane.showInputDialog(
-                                            Chat_panel.this,
-                                            "Enter your screen name:",
-                                            "Screen Name",
+                                            Chat_window.this,
+                                            "Enter your name:",
+                                            "Name",
                                             JOptionPane.PLAIN_MESSAGE
                                     );
 
                                     System.out.println("DEBUG (Client): clientName from JOptionPane is: '" + clientName + "'");
 
                                     if (clientName == null || clientName.trim().isEmpty()) {
-                                        JOptionPane.showMessageDialog(Chat_panel.this, "Name cannot be empty. Exiting.", "Error", JOptionPane.ERROR_MESSAGE);
+                                        JOptionPane.showMessageDialog(Chat_window.this, "Name cannot be empty. Exiting.", "Error", JOptionPane.ERROR_MESSAGE);
                                         System.exit(0);
                                     }
 
@@ -599,8 +595,8 @@ public class Chat_panel extends javax.swing.JPanel {
                                     System.out.println("DEBUG (Client): Message object created for name submission: " + nameSubmitMessage.toString());
                                     sendMessage(nameSubmitMessage);
 
-                                    name.setText(clientName); // Set client name in UI
-                                    status.setText("Online"); // Update status
+                                    name.setText(clientName);
+                                    status.setText("Online"); 
                                     status.setForeground(new java.awt.Color(51, 255, 0)); // Green for online
 
                                     // Request initial room list after name submission
@@ -610,13 +606,11 @@ public class Chat_panel extends javax.swing.JPanel {
                                 }
                                 break;
                             case TEXT:
-                                // Display text messages if they are for the current room
                                 if (incomingMessage.getRoomName() != null && incomingMessage.getRoomName().equals(currentRoom)) {
-                                    // Don't re-display our own sent message if it's already added by addItemRight
                                     if (!incomingMessage.getSenderName().equals(clientName)) {
                                         body.addItemLeft(incomingMessage.getSenderName() + ": " + incomingMessage.getContent());
                                     }
-                                } else if (incomingMessage.getRoomName() == null) { // General chat or server broadcast (should be rare in multi-room)
+                                } else if (incomingMessage.getRoomName() == null) { 
                                     body.addItemLeft(incomingMessage.getSenderName() + ": " + incomingMessage.getContent());
                                 }
                                 break;
@@ -624,16 +618,14 @@ public class Chat_panel extends javax.swing.JPanel {
                                 byte[] img = incomingMessage.getImageData();
                                 if (img != null) {
                                     if (incomingMessage.getSenderName().equals(clientName)) {
-                                        body.addImageRight(img,incomingMessage.getTimestamp());                                            
-                                    } 
-                                    else {
-                                        body.addImageLeft(incomingMessage.getSenderName(),img,incomingMessage.getTimestamp());
+                                        body.addImageRight(img, incomingMessage.getTimestamp());
+                                    } else {
+                                        body.addImageLeft(incomingMessage.getSenderName(), img, incomingMessage.getTimestamp());
                                     }
                                 }
                                 break;
 
                             case TYPING:
-                                // Typing indicator hanya ditampilkan di user lain, bukan di diri sendiri
                                 if (incomingMessage.getRoomName() != null
                                         && incomingMessage.getRoomName().equals(currentRoom)
                                         && !incomingMessage.getSenderName().equals(clientName)) {
@@ -641,7 +633,7 @@ public class Chat_panel extends javax.swing.JPanel {
                                     if (incomingMessage.getContent().equals("true")) {
                                         status.setText(incomingMessage.getSenderName() + " is typing...");
                                     } else {
-                                        status.setText("Active now");
+                                        status.setText("Online");
                                     }
                                 }
                                 break;
@@ -653,23 +645,17 @@ public class Chat_panel extends javax.swing.JPanel {
                                 }
                                 break;
                             case USER_KICKED:
-                                // ... other USER_KICKED handling ...
-                                // If THIS client was kicked from the current room
+                            
                                 if (incomingMessage.getRoomName() != null && incomingMessage.getRoomName().equals(currentRoom)
                                         && incomingMessage.getContent().contains("You have been kicked")) {
                                     // Tambahkan pop-up pemberitahuan
                                     JOptionPane.showMessageDialog(
-                                            Chat_panel.this,
+                                            Chat_window.this,
                                             "You have been kicked from the room '" + currentRoom + "'.",
                                             "Kicked from Room",
                                             JOptionPane.WARNING_MESSAGE
                                     );
-                                    /*
-                                    body.addItemLeft("System: You were kicked from room '" + currentRoom + "'.");
-                                    currentRoom = null; // <--- Crucial
-                                    name.setText(clientName + " (No Room)");
-                                    name.setToolTipText("Current Room: None");
-                                    inputFieldEnablement(false);*/
+                                   
                                     closeButton.setVisible(false);
                                     sendMessage(new Message(clientName, "Requesting room list", Message.MessageType.LIST_ROOMS_REQUEST));
                                 }
@@ -684,30 +670,30 @@ public class Chat_panel extends javax.swing.JPanel {
                                     inputFieldEnablement(false);
                                     sendMessage(new Message(clientName, "Requesting room list", Message.MessageType.LIST_ROOMS_REQUEST));
                                 } else {
-                                    body.addItemLeft(incomingMessage.getContent()); // Other room closures
+                                    body.addItemLeft(incomingMessage.getContent()); 
                                 }
                                 break;
                             case LIST_ROOMS_RESPONSE:
-                                if (leftPanelRef != null && incomingMessage.getDataList() != null) {
-                                    leftPanelRef.updateRoomList(incomingMessage.getDataList());
+                                if (senderPanelRef != null && incomingMessage.getDataList() != null) {
+                                    senderPanelRef.updateRoomList(incomingMessage.getDataList());
                                 }
                                 break;
                             case JOIN_ROOM_RESPONSE:
                                 if (incomingMessage.getContent().startsWith("SUCCESS")) {
                                     closeButton.setVisible(false);
                                     String joinedRoom = incomingMessage.getRoomName();
-                                    currentRoom = joinedRoom; // <<-- Make sure this is set!
+                                    currentRoom = joinedRoom;  
                                     name.setText(clientName + " (Room: " + currentRoom + ")");
                                     name.setToolTipText("Current Room: " + currentRoom);
                                     body.removeAllItems(); // Clear previous chat history
-                                    body.addItemLeft("System: You have joined room '" + joinedRoom + "'");
+                                    body.addItemLeft("System: Hi welcome to '" + joinedRoom + "' room.");
                                     inputFieldEnablement(true);
                                     sendMessage(new Message(clientName, "Requesting users", Message.MessageType.USERS_IN_ROOM_REQUEST, currentRoom));
 
                                     sendMessage(new Message(clientName, "Silent", Message.MessageType.ROOM_INFO_REQUEST, currentRoom));
                                 } else {
                                     body.addItemLeft("System: Failed to join room: " + incomingMessage.getContent());
-                                    currentRoom = null; // <<-- Clear if join fails
+                                    currentRoom = null; 
                                     name.setText(clientName + " (No Room)");
                                     name.setToolTipText("Current Room: None");
                                     inputFieldEnablement(false);
@@ -735,33 +721,29 @@ public class Chat_panel extends javax.swing.JPanel {
                                 break;
                             case ROOM_INFO_RESPONSE:
                                 String infoRoomName = incomingMessage.getRoomName();
-                                String roomOwner = incomingMessage.getTargetUser();    // Owner's name is in targetUser
-                                List<String> roomMembers = incomingMessage.getDataList(); // Members list is in dataList
+                                String roomOwner = incomingMessage.getTargetUser();    
+                                List<String> roomMembers = incomingMessage.getDataList(); 
 
                                 if (infoRoomName != null && roomOwner != null && roomMembers != null) {
-                                    // Create and show the Room_info JFrame
                                     if (incomingMessage.getContent().endsWith("Group List")) {
                                         System.out.println("Masuk sini");
                                         SwingUtilities.invokeLater(() -> {
-                                            // Buat panel konten
                                             JPanel panel = new JPanel();
                                             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
                                             panel.add(new JLabel("📌 Room Name: " + infoRoomName));
-                                            panel.add(new JLabel("👤 Owner: " + roomOwner));
+                                            panel.add(new JLabel("👤 Admin: " + roomOwner));
                                             panel.add(new JLabel("👥 Members:"));
 
-                                            // Tambahkan semua member ke panel
                                             for (String member : roomMembers) {
                                                 panel.add(new JLabel("   • " + member));
                                             }
 
-                                            // Buat dialog
-                                            JDialog dialog = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(Chat_panel.this), "Room Info", true);
+                                            JDialog dialog = new JDialog((java.awt.Frame) SwingUtilities.getWindowAncestor(Chat_window.this), "Room Info", true);
                                             dialog.setContentPane(panel);
                                             dialog.setPreferredSize(new Dimension(400, 300)); // Lebar 400px, tinggi 300px
                                             dialog.pack();
-                                            dialog.setLocationRelativeTo(Chat_panel.this); // tengah relatif terhadap Chat_panel
+                                            dialog.setLocationRelativeTo(Chat_window.this); // tengah relatif terhadap Chat_window
                                             dialog.setVisible(true);
                                         });
 
@@ -776,7 +758,7 @@ public class Chat_panel extends javax.swing.JPanel {
                                             }
                                         } else {
                                             SwingUtilities.invokeLater(() -> {
-                                                Room_info roomInfoWindow = new Room_info(infoRoomName, roomOwner, clientName, roomMembers, Chat_panel.this);
+                                                Room_info roomInfoWindow = new Room_info(infoRoomName, roomOwner, clientName, roomMembers, Chat_window.this);
                                                 roomInfoWindow.setVisible(true);
                                             });
                                             System.out.println("Opened Room_info window for room: " + infoRoomName);
@@ -791,7 +773,7 @@ public class Chat_panel extends javax.swing.JPanel {
 
                                 } else {
                                     body.addItemLeft("System: Error retrieving room info: Invalid data received.");
-                                    System.err.println("Client: ROOM_INFO_RESPONSE missing data. Room: " + infoRoomName + ", Owner: " + roomOwner + ", Members: " + roomMembers);
+                                    System.err.println("Client: ROOM_INFO_RESPONSE missing data. Room: " + infoRoomName + ", Admin: " + roomOwner + ", Members: " + roomMembers);
                                 }
                                 break;
                             case KICK_USER_RESPONSE:
@@ -824,16 +806,16 @@ public class Chat_panel extends javax.swing.JPanel {
             } catch (IOException e) {
                 String errorMessage;
                 if (e instanceof java.net.ConnectException) {
-                    errorMessage = "Connection refused. Is the server running?";
+                    errorMessage = "Check your server again";
                 } else if (e instanceof java.io.EOFException) {
-                    errorMessage = "Server disconnected unexpectedly.";
+                    errorMessage = "Check your server again.";
                 } else {
                     errorMessage = "Network error: " + e.getMessage();
                 }
                 System.err.println("Client Connection Error: " + errorMessage);
                 e.printStackTrace();
                 SwingUtilities.invokeLater(() -> {
-                    body.addItemLeft("System: Server disconnected. You have been disconnected. (" + errorMessage + ")");
+                    body.addItemLeft("System: Server disconnected. (" + errorMessage + ")");
                     inputFieldEnablement(false);
                     status.setText("Offline");
                     status.setForeground(new java.awt.Color(204, 0, 0));

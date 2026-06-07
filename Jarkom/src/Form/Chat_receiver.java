@@ -7,14 +7,11 @@ package Form;
 import java.awt.Color;
 import java.time.LocalTime;
 
-public class Chat_left extends javax.swing.JLayeredPane {
-
-    /**
-     * Creates new form Chat_left
-     */
-    public Chat_left() {
+public class Chat_receiver extends javax.swing.JLayeredPane {
+    
+    public Chat_receiver() {
         initComponents();
-        txt.setBackground(new Color(242, 242, 242));
+        txt.setBackground(new Color(179, 233, 255));
     }
     
     public void setText(String text) {
@@ -32,6 +29,10 @@ public class Chat_left extends javax.swing.JLayeredPane {
     private void initComponents() {
 
         txt = new Form.Chat_item();
+
+        setBackground(new java.awt.Color(0, 204, 153));
+
+        setLayer(txt, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
